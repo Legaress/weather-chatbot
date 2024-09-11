@@ -1,0 +1,30 @@
+services:
+  frontend:
+    image: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "7539:80"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ngrok:
+    image: ngrok/ngrok:alpine
+    command: http frontend:80 --log=stdout
+    environment:
+      - NGROK_AUTHTOKEN
+    ports:
+      - "4040:4040"
+    depends_on:
+      frontend:
+        condition: service_healthy
+    env_file:
+      - .env
+
+networks:
+  default:
+    name: frontend-network
